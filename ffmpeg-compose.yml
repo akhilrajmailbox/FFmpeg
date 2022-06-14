@@ -1,0 +1,16 @@
+version: '3.5'
+services:
+  ffmpeg:
+    image: akhilrajmailbox/ffmpeg:4.2
+    container_name: ffmpeg
+    hostname: ffmpeg
+    restart: on-failure:5
+    volumes:
+      - /usr/share/CceDeploy/MicroModule/FFmpeg/:/usr/share/microservices/FFmpeg/
+    networks:
+      - ffmpeg-network
+
+networks:
+  ffmpeg-network:
+    external: true
+    name: devops-network

@@ -1,0 +1,62 @@
+# https://docs.docker.com/compose/compose-file/compose-file-v3/
+version: '3.8'
+services:
+  ffmpeg:
+    image: akhilrajmailbox/ffmpeg:4.2
+    environment:
+      - DEPLOYMENT_NAME=ffmpeg
+    healthcheck:
+      test: ["CMD", "ffmpeg", "-version"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "com.devops.my.service.name=videoconverter"
+      - "com.devops.my.service.module=ffmpeg"
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "com.devops.my.service.name=videoconverter"
+        - "com.devops.my.service.module=ffmpeg"
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: pause # rollback
+        monitor: 5s
+        order: stop-first
+      # rollback_config:
+      #   parallelism: 1
+      #   delay: 10s
+      #   failure_action: pause
+      #   monitor: 5s
+      #   order: stop-first
+      restart_policy:
+        condition: any
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+      placement:
+        max_replicas_per_node: 1
+        constraints:
+          - "node.role==manager"
+          - "node.platform.os==linux"
+      resources:
+        limits:
+          cpus: "1"
+          memory: 4G
+        reservations:
+          cpus: "0.100"
+          memory: 1G
+    volumes:
+      # Directory must exist on the Host
+      - /usr/share/CceDeploy/MicroModule/FFmpeg/:/usr/share/microservices/FFmpeg/
+    networks:
+      - ffmpeg-swarm-network
+
+
+networks:
+  ffmpeg-swarm-network:
+    external: true
+    name: ffmpeg-swarm-network
